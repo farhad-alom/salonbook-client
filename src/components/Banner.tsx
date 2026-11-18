@@ -1,77 +1,58 @@
 import Image from "next/image";
 import Link from "next/link";
 
-// নিচের তিনটি সুবিধা (ডেস্কটপ ও ট্যাবলেটে দেখাবে)
-const highlights = [
-  { title: "Easy Online Booking", text: "Pick a service, date and time in a few clicks" },
-  { title: "Expert Stylists", text: "Hair, skin, makeup and spa care in one place" },
-  { title: "Secure Payment", text: "Pay safely online once your booking is confirmed" },
-];
-
 export default function Banner() {
   return (
-    <section className="relative flex min-h-[560px] flex-col md:min-h-[680px]">
-      {/* ব্যাকগ্রাউন্ড ছবি (public/banner.jpg) */}
-      <Image
-        src="/banner2.jpg"
-        alt="Modern beauty salon with gold mirrors and styling chairs"
-        fill
-        priority
-        className="object-cover object-[65%_center]"
-      />
-
-      {/* মোবাইলে: পুরো ছবির ওপর গাঢ় পর্দা */}
-      <div className="absolute inset-0 bg-[#18181e]/70 md:hidden" />
-
-      {/* ডেস্কটপে: বাঁ দিকে গাঢ়, ডান দিকে ছবি পরিষ্কার */}
-      <div
-        className="absolute inset-0 hidden md:block"
-        style={{
-          background:
-            "linear-gradient(to right, rgba(24,24,30,0.9) 0%, rgba(24,24,30,0.7) 45%, rgba(24,24,30,0.15) 100%)",
-        }}
-      />
-
-      {/* লেখা ও বাটন */}
-      <div className="relative flex flex-1 items-center">
-        <div className="mx-auto w-full max-w-7xl px-4 py-16">
-          <div className="max-w-2xl">
-            <h1 className="text-4xl font-bold leading-tight text-white sm:text-5xl lg:text-7xl">
-              Look Your Best, Book in Minutes
-            </h1>
-
-            <p className="mt-5 max-w-xl text-base text-white/80 md:text-lg">
-              Discover haircuts, skincare, makeup and spa treatments. Choose a
-              service, pick a time that suits you and book your appointment online.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/services"
-                className="rounded-md bg-primary px-7 py-3 text-center font-medium text-primary-foreground hover:opacity-90"
-              >
-                Explore Salon Services
-              </Link>
-              <Link
-                href="#categories"
-                className="rounded-md border border-white/60 px-7 py-3 text-center font-medium text-white hover:bg-white/10"
-              >
-                Browse Categories
-              </Link>
-            </div>
-          </div>
-        </div>
+    // মোবাইল ও ট্যাবলেটে: ছবি ওপরে, লেখা নিচে
+    // বড় স্ক্রিনে (lg): ছবি পুরো ব্যাকগ্রাউন্ড, লেখা বাঁ দিকের ফাঁকা অংশে
+    <section className="relative bg-secondary lg:flex lg:min-h-[600px] lg:items-center">
+      {/* ছবি — মোবাইলে ওপরে, lg-তে পুরো ব্যাকগ্রাউন্ড */}
+      <div className="relative h-64 w-full sm:h-80 md:h-96 lg:absolute lg:inset-0 lg:h-auto">
+        <Image
+          src="/banner.png"
+          alt="Elegant beauty salon with styling chairs, a round mirror and orchids"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-right"
+        />
+        {/* মোবাইলে ছবির নিচে হালকা গ্রেডিয়েন্ট — লেখার অংশের সাথে সুন্দরভাবে মিশে যায় */}
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-secondary to-transparent lg:hidden" />
       </div>
 
-      {/* নিচের সুবিধার স্ট্রিপ (মোবাইলে লুকানো) */}
-      <div className="relative hidden border-t border-white/20 bg-black/40 backdrop-blur-sm sm:block">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-5 sm:grid-cols-3">
-          {highlights.map((item) => (
-            <div key={item.title}>
-              <p className="font-semibold text-white">{item.title}</p>
-              <p className="mt-1 text-sm text-white/70">{item.text}</p>
-            </div>
-          ))}
+      {/* লেখা ও বাটন */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 pb-12 pt-8 sm:px-6 sm:pb-16 sm:pt-10 lg:px-8 lg:py-20">
+        <div className="max-w-xl lg:max-w-lg xl:max-w-xl">
+          {/* ছোট সোনালি দাগ */}
+          <div className="h-1 w-14 rounded-full bg-[#B8893C]" />
+
+          <h1 className="mt-5 text-3xl font-bold leading-tight text-foreground sm:text-4xl lg:text-5xl xl:text-6xl">
+            Beauty Care, Booked in Minutes
+          </h1>
+
+          <p className="mt-4 text-base text-foreground/80 md:text-lg">
+            Explore haircuts, skincare, makeup and spa services. Choose what you
+            love, pick a time that suits you and book your appointment online.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/services"
+              className="w-full rounded-md bg-primary px-7 py-3 text-center font-medium text-primary-foreground transition hover:opacity-90 sm:w-auto"
+            >
+              Explore Salon Services
+            </Link>
+            <Link
+              href="#categories"
+              className="w-full rounded-md border border-[#B8893C] bg-white px-7 py-3 text-center font-medium text-[#8A6A2F] transition-colors hover:bg-[#B8893C] hover:text-white sm:w-auto"
+            >
+              Browse Categories
+            </Link>
+          </div>
+
+          <p className="mt-6 text-sm text-foreground/70">
+            Easy booking &bull; Expert stylists &bull; Secure online payment
+          </p>
         </div>
       </div>
     </section>
