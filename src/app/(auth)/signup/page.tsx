@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
+import { uploadImage } from "@/lib/uploadImage";
 
 // পাসওয়ার্ড ঠিক আছে কিনা চেক করার ফাংশন
 // ঠিক থাকলে খালি লেখা ("") ফেরত দেয়, ভুল থাকলে এরর মেসেজ ফেরত দেয়
@@ -21,22 +22,22 @@ function checkPassword(password: string) {
   return "";
 }
 
-// ছবি ImgBB-তে আপলোড করে ছবির লিংক ফেরত দেয়
-async function uploadToImgBB(file: File) {
-  const formData = new FormData();
-  formData.append("image", file);
+// // ছবি ImgBB-তে আপলোড করে ছবির লিংক ফেরত দেয়
+// async function uploadToImgBB(file: File) {
+//   const formData = new FormData();
+//   formData.append("image", file);
 
-  const res = await fetch(
-    `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
-    { method: "POST", body: formData }
-  );
-  const result = await res.json();
+//   const res = await fetch(
+//     `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+//     { method: "POST", body: formData }
+//   );
+//   const result = await res.json();
 
-  if (!result.success) {
-    throw new Error("Image upload failed");
-  }
-  return result.data.url as string;
-}
+//   if (!result.success) {
+//     throw new Error("Image upload failed");
+//   }
+//   return result.data.url as string;
+// }
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -70,7 +71,7 @@ export default function SignUpPage() {
       // ২. ছবি দিলে আপলোড করা, না দিলে লিংক (বা খালি) ব্যবহার করা
       let finalImage = imageUrl.trim();
       if (imageFile) {
-        finalImage = await uploadToImgBB(imageFile);
+        finalImage = await uploadImage(imageFile);
       }
 
       // ৩. Better Auth দিয়ে অ্যাকাউন্ট খোলা
