@@ -5,7 +5,7 @@ import React from 'react';
 const HomePage = () => {
   return (
     <div>
-      <h2>this is the home page</h2>
+
       <Banner />
       <Categories />
     </div>
