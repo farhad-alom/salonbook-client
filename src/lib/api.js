@@ -21,3 +21,22 @@ export async function apiFetch(path, options = {}) {
     }
     return data;
 }
+
+// this is an Helper function লগইন করা ইউজারের টোকেনসহ সার্ভারে রিকোয়েস্ট পাঠানোর ফাংশন
+export async function authFetch(path, options = {}) {
+    //bring the token
+    const tokenRes = await fetch('/api/token');
+    if (!tokenRes.ok) {
+        throw new Error("Please sign in first");
+    }
+    const { token } = await tokenRes.json();
+
+    //send token to the server
+    return apiFetch(path, {
+        ...options,
+        headers: {
+            Authorization: `Bearer ${token}`,
+            ...options.headers,
+        }
+    })
+}
