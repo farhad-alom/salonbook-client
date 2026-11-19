@@ -86,7 +86,7 @@ export default function SignUpPage() {
         toast.error(error.message || "Sign up failed");
       } else {
         toast.success("Account created successfully!");
-        router.push("/dashboard");
+        router.push("/dashboard/customer");
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
