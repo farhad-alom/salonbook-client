@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type SubmitEvent } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, authFetch } from "@/lib/api";
 import { type Service } from "@/components/ServiceCard";
+import { toast } from "sonner";
+
+// বুকিংয়ের জন্য সময়ের তালিকা
+const timeSlots = ["10:00 AM", "11:00 AM", "12:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM"];
 
 export default function ServiceDetailsPage() {
     const params = useParams();
@@ -19,6 +23,11 @@ export default function ServiceDetailsPage() {
     const [service, setService] = useState<Service | null>(null); // সার্ভার থেকে আসা সার্ভিস
     const [loading, setLoading] = useState(true); // লোড হচ্ছে কিনা
     const [errorMessage, setErrorMessage] = useState(""); // সার্ভার error দিলে সেই লেখা
+    // বুকিং ফর্মের তথ্য
+    const [date, setDate] = useState("");
+    const [time, setTime] = useState("");
+    const [message, setMessage] = useState("");
+    const [booking, setBooking] = useState(false); // সাবমিট হচ্ছে কিনা
 
     // ১. লগইন না থাকলে Sign In পেজে পাঠানো
     useEffect(() => {
@@ -80,6 +89,36 @@ export default function ServiceDetailsPage() {
     // লগইন করা ইউজারের role (admin নাকি customer)
     const role = (session.user as { role?: string }).role;
 
+    // আজকের তারিখ (আগের তারিখ বাছাই আটকানোর জন্য)
+    const today = new Date().toISOString().split("T")[0];
+
+    // ফর্ম সাবমিট হলে সার্ভারে বুকিং পাঠানো
+    async function handleBook(e: SubmitEvent<HTMLFormElement>) {
+        e.preventDefault();
+
+        if (!date || !time) {
+            toast.error("Please select date and time");
+            return;
+        }
+
+        // start the booking processing thats why setBooking(true);
+        setBooking(true);
+        try {
+            await authFetch("/api/appointments", {
+                method: "POST",
+                body: JSON.stringify({ serviceId: id, date, time, message }),
+            });
+            toast.success("Appointment requested successfully");
+            setDate("");
+            setTime("");
+            setMessage("");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Booking failed");
+        } finally {
+            setBooking(false);
+        }
+    }
+
     return (
         <main className="bg-secondary px-4 py-10 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl">
@@ -132,14 +171,56 @@ export default function ServiceDetailsPage() {
                                 </p>
                             )}
 
-                            {/* customer এবং active সার্ভিস হলে বুকিং বাটন */}
+                            {/* customer এবং active সার্ভিস হলে বুকিং ফর্ম */}
                             {service.status === "active" && role !== "admin" && (
-                                <button
-                                    type="button"
-                                    className="rounded-md bg-primary px-8 py-3 font-medium text-primary-foreground transition hover:opacity-90"
-                                >
-                                    Book Appointment
-                                </button>
+                                <form onSubmit={handleBook} className="space-y-4 rounded-xl border border-border bg-card p-5">
+                                    <h2 className="text-lg font-bold text-foreground">Book Appointment</h2>
+
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-foreground">Date</label>
+                                        <input
+                                            type="date"
+                                            min={today}
+                                            value={date}
+                                            onChange={(e) => setDate(e.target.value)}
+                                            className="w-full rounded-md border border-border bg-background px-3 py-2"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-foreground">Time</label>
+                                        <select
+                                            value={time}
+                                            onChange={(e) => setTime(e.target.value)}
+                                            className="w-full rounded-md border border-border bg-background px-3 py-2"
+                                        >
+                                            <option value="">Select a time</option>
+                                            {timeSlots.map((slot) => (
+                                                <option key={slot} value={slot}>
+                                                    {slot}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div>
+                                        <label className="mb-1 block text-sm font-medium text-foreground">Message (optional)</label>
+                                        <textarea
+                                            value={message}
+                                            onChange={(e) => setMessage(e.target.value)}
+                                            rows={3}
+                                            className="w-full rounded-md border border-border bg-background px-3 py-2"
+                                        />
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={booking}
+                                        className="w-full rounded-md bg-primary px-8 py-3 font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
+                                    >
+                                        {booking ? "Booking..." : "Book Appointment"}
+                                    </button>
+                                </form>
                             )}
                         </div>
                     </div>
