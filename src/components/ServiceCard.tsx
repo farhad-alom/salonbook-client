@@ -10,6 +10,7 @@ export type Service = {
     price: number;
     duration: number;
     image: string;
+    status: string;
 };
 
 export default function ServiceCard({ service }: { service: Service }) {
