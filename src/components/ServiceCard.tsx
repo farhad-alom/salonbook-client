@@ -1,4 +1,4 @@
-import Image from "next/image";
+
 import Link from "next/link";
 
 // একটা সার্ভিসের তথ্য কেমন হবে, সেটা এখানে লিখে রাখলাম

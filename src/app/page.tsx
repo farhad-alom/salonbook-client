@@ -1,5 +1,7 @@
 import Banner from '@/components/Banner';
 import Categories from '@/components/Categories';
+import FeaturedServices from '@/components/FeaturedServices';
+import WhyChooseUs from '@/components/WhyChooseUs';
 import React from 'react';
 
 const HomePage = () => {
@@ -8,6 +10,8 @@ const HomePage = () => {
 
       <Banner />
       <Categories />
+      <FeaturedServices />
+      <WhyChooseUs />
     </div>
   );
 };
