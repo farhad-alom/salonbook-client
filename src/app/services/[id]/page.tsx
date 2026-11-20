@@ -132,7 +132,7 @@ export default function ServiceDetailsPage() {
                                 </p>
                             )}
 
-                            {/* customer এবং active সার্ভিস হলে বুকিং বাটন (ফর্ম ফেজ ১৭-তে আসবে) */}
+                            {/* customer এবং active সার্ভিস হলে বুকিং বাটন */}
                             {service.status === "active" && role !== "admin" && (
                                 <button
                                     type="button"
