@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { authFetch } from "@/lib/api";
-import { uploadImage } from "@/lib/uploadImage";
 import { type Service } from "@/components/ServiceCard";
 import {
     Dialog,
@@ -14,118 +14,26 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 
-const categories = [
-    "Haircut & Styling",
-    "Hair Coloring",
-    "Hair Treatment",
-    "Facial & Skincare",
-    "Makeup",
-    "Manicure & Pedicure",
-    "Spa & Massage",
-];
-
-// ফর্মের খালি অবস্থা
-const emptyForm = {
-    serviceName: "",
-    category: categories[0],
-    description: "",
-    price: "",
-    duration: "",
-    status: "active",
-};
-
 export default function ManageServicesPage() {
     const [services, setServices] = useState<Service[]>([]);
     const [loading, setLoading] = useState(true);
-
-    const [formOpen, setFormOpen] = useState(false); // Add/Update ডায়ালগ খোলা কিনা
-    const [editing, setEditing] = useState<Service | null>(null); // null হলে Add, নইলে Update
-    const [form, setForm] = useState(emptyForm);
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [saving, setSaving] = useState(false);
-
     const [deleteItem, setDeleteItem] = useState<Service | null>(null); // Delete ডায়ালগ
     const [deleting, setDeleting] = useState(false);
 
     // সব সার্ভিস আনা
-    async function loadServices() {
-        try {
-            const data = await authFetch("/api/admin/services");
-            setServices(data);
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to load services");
-        } finally {
-            setLoading(false);
-        }
-    }
-
     useEffect(() => {
+        async function loadServices() {
+            try {
+                const data = await authFetch("/api/admin/services");
+                setServices(data);
+            } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Failed to load services");
+            } finally {
+                setLoading(false);
+            }
+        }
         loadServices();
     }, []);
-
-    // ফর্মের যেকোনো ঘরে লিখলে form-এ সেভ হবে
-    function handleChange(e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    }
-
-    // "Add Service" চাপলে খালি ফর্ম খোলা
-    function openAdd() {
-        setEditing(null);
-        setForm(emptyForm);
-        setImageFile(null);
-        setFormOpen(true);
-    }
-
-    // "Edit" চাপলে পুরনো তথ্যসহ ফর্ম খোলা
-    function openEdit(service: Service) {
-        setEditing(service);
-        setForm({
-            serviceName: service.serviceName,
-            category: service.category,
-            description: service.description,
-            price: String(service.price),
-            duration: String(service.duration),
-            status: service.status,
-        });
-        setImageFile(null);
-        setFormOpen(true);
-    }
-
-    // ফর্ম সাবমিট: ছবি আপলোড করে সার্ভিস সেভ করা
-    async function handleSave(e: FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-
-        if (!editing && !imageFile) {
-            toast.error("Please select an image");
-            return;
-        }
-
-        setSaving(true);
-        try {
-            // নতুন ছবি বাছলে আপলোড করবে, নইলে পুরনো ছবিই থাকবে
-            let image = editing ? editing.image : "";
-            if (imageFile) {
-                image = await uploadImage(imageFile);
-            }
-
-            const body = JSON.stringify({ ...form, image });
-
-            if (editing) {
-                await authFetch(`/api/admin/services/${editing._id}`, { method: "PUT", body });
-                toast.success("Service updated successfully");
-            } else {
-                await authFetch("/api/admin/services", { method: "POST", body });
-                toast.success("Service added successfully");
-            }
-
-            setFormOpen(false);
-            loadServices();
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to save service");
-        } finally {
-            setSaving(false);
-        }
-    }
 
     // Active <-> Inactive বদলানো
     async function toggleStatus(service: Service) {
@@ -166,13 +74,12 @@ export default function ManageServicesPage() {
         <div>
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-foreground">Manage Services</h1>
-                <button
-                    type="button"
-                    onClick={openAdd}
+                <Link
+                    href="/dashboard/admin/services/add"
                     className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:opacity-90"
                 >
                     Add Service
-                </button>
+                </Link>
             </div>
 
             {services.length === 0 && <p className="mt-6 text-foreground/70">No services found.</p>}
@@ -213,13 +120,12 @@ export default function ManageServicesPage() {
                                     </td>
                                     <td className="p-3">
                                         <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => openEdit(service)}
+                                            <Link
+                                                href={`/dashboard/admin/services/${service._id}/edit`}
                                                 className="rounded-md border border-border px-3 py-1 hover:bg-muted"
                                             >
                                                 Edit
-                                            </button>
+                                            </Link>
                                             <button
                                                 type="button"
                                                 onClick={() => toggleStatus(service)}
@@ -242,112 +148,6 @@ export default function ManageServicesPage() {
                     </table>
                 </div>
             )}
-
-            {/* Add / Update ডায়ালগ */}
-            <Dialog open={formOpen} onOpenChange={setFormOpen}>
-                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-                    <DialogHeader>
-                        <DialogTitle>{editing ? "Update Service" : "Add Service"}</DialogTitle>
-                        <DialogDescription>Fill in the service details below.</DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleSave} className="space-y-3">
-                        <input
-                            name="serviceName"
-                            value={form.serviceName}
-                            onChange={handleChange}
-                            placeholder="Service name"
-                            required
-                            className="w-full rounded-md border border-border bg-background px-3 py-2"
-                        />
-
-                        <select
-                            name="category"
-                            value={form.category}
-                            onChange={handleChange}
-                            className="w-full rounded-md border border-border bg-background px-3 py-2"
-                        >
-                            {categories.map((c) => (
-                                <option key={c} value={c}>
-                                    {c}
-                                </option>
-                            ))}
-                        </select>
-
-                        <textarea
-                            name="description"
-                            value={form.description}
-                            onChange={handleChange}
-                            placeholder="Description"
-                            rows={3}
-                            required
-                            className="w-full rounded-md border border-border bg-background px-3 py-2"
-                        />
-
-                        <div className="flex gap-3">
-                            <input
-                                name="price"
-                                type="number"
-                                min="1"
-                                value={form.price}
-                                onChange={handleChange}
-                                placeholder="Price ($)"
-                                required
-                                className="w-full rounded-md border border-border bg-background px-3 py-2"
-                            />
-                            <input
-                                name="duration"
-                                type="number"
-                                min="1"
-                                value={form.duration}
-                                onChange={handleChange}
-                                placeholder="Duration (min)"
-                                required
-                                className="w-full rounded-md border border-border bg-background px-3 py-2"
-                            />
-                        </div>
-
-                        <select
-                            name="status"
-                            value={form.status}
-                            onChange={handleChange}
-                            className="w-full rounded-md border border-border bg-background px-3 py-2"
-                        >
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-
-                        <div>
-                            <label className="mb-1 block text-sm font-medium">
-                                Image {editing && "(leave empty to keep the current image)"}
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => setImageFile(e.target.files ? e.target.files[0] : null)}
-                                className="w-full text-sm"
-                            />
-                        </div>
-
-                        <DialogFooter>
-                            <button
-                                type="button"
-                                onClick={() => setFormOpen(false)}
-                                className="rounded-md border border-border px-4 py-2 hover:bg-muted"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={saving}
-                                className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
-                            >
-                                {saving ? "Saving..." : editing ? "Update" : "Add"}
-                            </button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
 
             {/* Delete নিশ্চিত করার ডায়ালগ */}
             <Dialog open={deleteItem !== null} onOpenChange={(open) => { if (!open) setDeleteItem(null); }}>
