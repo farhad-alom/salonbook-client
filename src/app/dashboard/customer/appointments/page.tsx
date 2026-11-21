@@ -191,7 +191,14 @@ export default function MyAppointmentsPage() {
                                                             ? "Redirecting..."
                                                             : "Pay Now"}
                                                     </button>
+
                                                 )}
+                                            {/* paid হলে Pay Now-এর জায়গায় Paid লেখা */}
+                                            {item.paymentStatus === "paid" && (
+                                                <span className="px-3 py-1 text-sm font-medium text-green-700">
+                                                    Paid ✓
+                                                </span>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
