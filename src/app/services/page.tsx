@@ -1,4 +1,5 @@
 import ServicesBrowser from '@/components/ServiceBrowser';
+export const metadata = { title: "Browse Services" };
 
 const ServicesPage = async ({ searchParams }: { searchParams: Promise<{ category?: string }> }) => {
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+export const metadata = { title: "Payment Successful" };
 
 export default function PaymentSuccessPage() {
     return (

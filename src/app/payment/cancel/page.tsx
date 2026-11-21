@@ -1,4 +1,5 @@
 import Link from "next/link";
+export const metadata = { title: "Payment Cancelled" };
 
 export default function PaymentCancelPage() {
     return (
