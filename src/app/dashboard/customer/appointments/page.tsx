@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -27,9 +28,10 @@ function statusColor(status: string) {
 export default function MyAppointmentsPage() {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
-    const [details, setDetails] = useState<Appointment | null>(null); // বিস্তারিত পপআপ
-    const [cancelItem, setCancelItem] = useState<Appointment | null>(null); // cancel নিশ্চিত করার পপআপ
+    const [details, setDetails] = useState<Appointment | null>(null);
+    const [cancelItem, setCancelItem] = useState<Appointment | null>(null);
     const [cancelling, setCancelling] = useState(false);
+    const [payingId, setPayingId] = useState("");
 
     // নিজের সব অ্যাপয়েন্টমেন্ট আনা
     useEffect(() => {
@@ -43,26 +45,53 @@ export default function MyAppointmentsPage() {
                 setLoading(false);
             }
         }
+
         loadAppointments();
     }, []);
 
-    // "Yes, Cancel" চাপলে সার্ভারে cancel পাঠানো
+    // Appointment Cancel করা
     async function handleCancel() {
         if (!cancelItem) return;
+
         setCancelling(true);
+
         try {
-            await authFetch(`/api/appointments/${cancelItem._id}/cancel`, { method: "PATCH" });
+            await authFetch(`/api/appointments/${cancelItem._id}/cancel`, {
+                method: "PATCH",
+            });
+
             toast.success("Appointment cancelled successfully");
 
-            // তালিকায় ওই অ্যাপয়েন্টমেন্টের status বদলে দেওয়া
             setAppointments(
-                appointments.map((a) => (a._id === cancelItem._id ? { ...a, status: "cancelled" } : a))
+                appointments.map((a) =>
+                    a._id === cancelItem._id
+                        ? { ...a, status: "cancelled" }
+                        : a
+                )
             );
+
             setCancelItem(null);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to cancel");
         } finally {
             setCancelling(false);
+        }
+    }
+
+    // Stripe Payment শুরু করা
+    async function handlePay(id: string) {
+        setPayingId(id);
+
+        try {
+            const data = await authFetch("/api/payments/checkout", {
+                method: "POST",
+                body: JSON.stringify({ appointmentId: id }),
+            });
+
+            window.location.href = data.url;
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to start payment");
+            setPayingId("");
         }
     }
 
@@ -78,7 +107,10 @@ export default function MyAppointmentsPage() {
             {appointments.length === 0 && (
                 <div className="mt-6 rounded-xl border border-border bg-card p-8 text-center">
                     <p className="text-foreground/70">You have no appointments yet.</p>
-                    <Link href="/services" className="mt-4 inline-block font-medium text-[#8A6A2F] hover:underline">
+                    <Link
+                        href="/services"
+                        className="mt-4 inline-block font-medium text-[#8A6A2F] hover:underline"
+                    >
                         Browse Services
                     </Link>
                 </div>
@@ -98,23 +130,33 @@ export default function MyAppointmentsPage() {
                                 <th className="p-3">Actions</th>
                             </tr>
                         </thead>
+
                         <tbody>
                             {appointments.map((item) => (
                                 <tr key={item._id} className="border-b border-border last:border-0">
                                     <td className="p-3">
                                         <div className="flex items-center gap-3">
-                                            <img src={item.serviceImage} alt={item.serviceName} className="h-10 w-10 rounded-md bg-muted object-cover" />
+                                            <img
+                                                src={item.serviceImage}
+                                                alt={item.serviceName}
+                                                className="h-10 w-10 rounded-md bg-muted object-cover"
+                                            />
                                             <span className="font-medium">{item.serviceName}</span>
                                         </div>
                                     </td>
+
                                     <td className="p-3">{item.date}</td>
                                     <td className="p-3">{item.time}</td>
+
                                     <td className="p-3">
                                         <span className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${statusColor(item.status)}`}>
                                             {item.status}
                                         </span>
                                     </td>
+
                                     <td className="p-3 capitalize">{item.paymentStatus}</td>
+
+                                    {/* Actions */}
                                     <td className="p-3">
                                         <div className="flex gap-2">
                                             <button
@@ -124,6 +166,7 @@ export default function MyAppointmentsPage() {
                                             >
                                                 Details
                                             </button>
+
                                             {/* Cancel শুধু pending হলে */}
                                             {item.status === "pending" && (
                                                 <button
@@ -134,6 +177,21 @@ export default function MyAppointmentsPage() {
                                                     Cancel
                                                 </button>
                                             )}
+
+                                            {/* Pay Now শুধু confirmed ও unpaid হলে */}
+                                            {item.status === "confirmed" &&
+                                                item.paymentStatus === "unpaid" && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handlePay(item._id)}
+                                                        disabled={payingId !== ""}
+                                                        className="rounded-md bg-green-600 px-3 py-1 text-white hover:opacity-90 disabled:opacity-60"
+                                                    >
+                                                        {payingId === item._id
+                                                            ? "Redirecting..."
+                                                            : "Pay Now"}
+                                                    </button>
+                                                )}
                                         </div>
                                     </td>
                                 </tr>
@@ -147,7 +205,10 @@ export default function MyAppointmentsPage() {
             {details && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
                     <div className="w-full max-w-md rounded-xl bg-card p-6">
-                        <h2 className="text-lg font-bold text-foreground">{details.serviceName}</h2>
+                        <h2 className="text-lg font-bold text-foreground">
+                            {details.serviceName}
+                        </h2>
+
                         <div className="mt-4 space-y-2 text-sm text-foreground/80">
                             <p>Date: {details.date}</p>
                             <p>Time: {details.time}</p>
@@ -156,6 +217,7 @@ export default function MyAppointmentsPage() {
                             <p className="capitalize">Payment: {details.paymentStatus}</p>
                             <p>Message: {details.message || "No message"}</p>
                         </div>
+
                         <button
                             type="button"
                             onClick={() => setDetails(null)}
@@ -171,10 +233,14 @@ export default function MyAppointmentsPage() {
             {cancelItem && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
                     <div className="w-full max-w-sm rounded-xl bg-card p-6">
-                        <h2 className="text-lg font-bold text-foreground">Cancel appointment?</h2>
+                        <h2 className="text-lg font-bold text-foreground">
+                            Cancel appointment?
+                        </h2>
+
                         <p className="mt-2 text-sm text-foreground/70">
                             Are you sure you want to cancel your {cancelItem.serviceName} appointment?
                         </p>
+
                         <div className="mt-6 flex gap-3">
                             <button
                                 type="button"
@@ -183,6 +249,7 @@ export default function MyAppointmentsPage() {
                             >
                                 No, Keep
                             </button>
+
                             <button
                                 type="button"
                                 onClick={handleCancel}
