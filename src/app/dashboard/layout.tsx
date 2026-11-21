@@ -20,6 +20,7 @@ const adminLinks = [
 const customerLinks = [
     { name: "Overview", href: "/dashboard/customer" },
     { name: "My Appointments", href: "/dashboard/customer/appointments" },
+    { name: "Payment History", href: "/dashboard/customer/payments" },
     { name: "My Profile", href: "/dashboard/customer/profile" },
 ];
 
