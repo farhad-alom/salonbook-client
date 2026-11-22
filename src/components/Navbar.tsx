@@ -31,24 +31,35 @@ export default function Navbar() {
   }
 
   // বর্তমান পেজের লিংক রঙিন দেখানোর জন্য
-  function linkClass(href) {
+  function linkClass(href: string) {
     const isActive = pathname === href;
     return isActive
       ? "font-semibold text-primary"
       : "text-foreground hover:text-primary";
   }
 
+
   async function handleLogout() {
     try {
-      await authClient.signOut();
+      const { error } = await authClient.signOut();
+
+      if (error) {
+        toast.error(error.message || "Logout failed");
+        return;
+      }
+
       setProfileOpen(false);
       setMobileOpen(false);
+
       toast.success("Logged out successfully");
-      router.push("/");
-    } catch (error) {
+
+      router.replace("/");
+      router.refresh();
+    } catch {
       toast.error("Logout failed. Please try again.");
     }
   }
+
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
