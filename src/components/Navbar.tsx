@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -8,37 +9,37 @@ import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 
 export default function Navbar() {
-  const pathname = usePathname(); // এখন কোন পেজে আছি, সেটি জানার জন্য
+  const pathname = usePathname();
   const router = useRouter();
 
-  // লগইন করা ইউজারের তথ্য। লগইন বা লগআউট করলে এটি নিজেই বদলে যায়,
-  // তাই Navbar সাথে সাথে আপডেট হয়।
+  // Get logged-in user information
   const { data: session } = authClient.useSession();
   const user = session?.user;
 
-  const [mobileOpen, setMobileOpen] = useState(false); // মোবাইল মেনু খোলা আছে কিনা
-  const [profileOpen, setProfileOpen] = useState(false); // প্রোফাইল ড্রপডাউন খোলা আছে কিনা
+  // Navbar states
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
 
-  // সবার জন্য: Home ও Browse Services
+  // Navigation links
   const links = [
     { name: "Home", href: "/" },
     { name: "Browse Services", href: "/services" },
   ];
 
-  // লগইন করা থাকলে Dashboard লিংক যোগ হবে
   if (user) {
     links.push({ name: "Dashboard", href: "/dashboard" });
   }
 
-  // বর্তমান পেজের লিংক রঙিন দেখানোর জন্য
+  // Active navigation link style
   function linkClass(href: string) {
     const isActive = pathname === href;
+
     return isActive
       ? "font-semibold text-primary"
       : "text-foreground hover:text-primary";
   }
 
-
+  // Handle logout
   async function handleLogout() {
     try {
       const { error } = await authClient.signOut();
@@ -60,11 +61,11 @@ export default function Navbar() {
     }
   }
 
-
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
-        {/* লোগো */}
+
+        {/* Logo */}
         <Link href="/">
           <Image
             src="/nav-logo.png"
@@ -76,45 +77,87 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* ডেস্কটপ মেনু (মোবাইলে লুকানো) */}
+        {/* Desktop Navigation */}
         <nav className="hidden items-center gap-6 md:flex">
           {links.map((link) => (
-            <Link key={link.href} href={link.href} className={linkClass(link.href)}>
+            <Link
+              key={link.href}
+              href={link.href}
+              className={linkClass(link.href)}
+            >
               {link.name}
             </Link>
           ))}
         </nav>
 
-        {/* ডান পাশ: লগইন থাকলে প্রোফাইল, না থাকলে Sign In / Sign Up */}
+        {/* Desktop Profile / Authentication */}
         <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <div className="relative">
+
+              {/* Profile Button */}
               <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary font-semibold text-foreground"
+                type="button"
+                onClick={() => setProfileOpen((prev) => !prev)}
+                aria-label="Toggle profile menu"
+                aria-expanded={profileOpen}
+                className="flex items-center gap-2 rounded-full p-1 transition-colors hover:bg-muted"
               >
-                {user.image ? (
-                  <img src={user.image} alt={user.name} className="h-full w-full object-cover" />
-                ) : (
-                  user.name?.charAt(0).toUpperCase()
-                )}
+                {/* Profile Picture */}
+                <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-secondary font-semibold text-foreground">
+                  {user.image ? (
+                    <Image
+                      src={user.image}
+                      alt={user.name || "Profile"}
+                      width={40}
+                      height={40}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    user.name?.charAt(0).toUpperCase() || "U"
+                  )}
+                </div>
+
+                {/* Dropdown Arrow */}
+                <svg
+                  className={`h-4 w-4 transition-transform duration-200 ${profileOpen ? "rotate-180" : ""
+                    }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="m6 9 6 6 6-6"
+                  />
+                </svg>
               </button>
 
-              {/* প্রোফাইল ড্রপডাউন */}
+              {/* Profile Dropdown */}
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-card p-2 shadow-md">
-                  <p className="px-3 py-2 text-sm font-semibold">{user.name}</p>
+                <div className="absolute right-0 z-50 mt-2 w-48 rounded-lg border border-border bg-card p-2 shadow-lg">
+
+                  <p className="truncate px-3 py-2 text-sm font-semibold">
+                    {user.name}
+                  </p>
+
                   <hr className="my-1 border-border" />
+
                   <Link
                     href="/dashboard"
                     onClick={() => setProfileOpen(false)}
-                    className="block rounded-md px-3 py-2 text-sm hover:bg-muted"
+                    className="block rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted"
                   >
                     Dashboard
                   </Link>
+
                   <button
+                    type="button"
                     onClick={handleLogout}
-                    className="block w-full rounded-md px-3 py-2 text-left text-sm text-destructive hover:bg-muted"
+                    className="block w-full rounded-md px-3 py-2 text-left text-sm text-destructive transition-colors hover:bg-muted"
                   >
                     Logout
                   </button>
@@ -129,6 +172,7 @@ export default function Navbar() {
               >
                 Sign In
               </Link>
+
               <Link
                 href="/signup"
                 className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
@@ -139,18 +183,22 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* মোবাইলের মেনু বাটন (ডেস্কটপে লুকানো) */}
+        {/* Mobile Menu Button */}
         <button
-          onClick={() => setMobileOpen(!mobileOpen)}
+          type="button"
+          onClick={() => setMobileOpen((prev) => !prev)}
+          aria-label="Toggle mobile menu"
+          aria-expanded={mobileOpen}
           className="rounded-md border border-border px-3 py-2 text-lg md:hidden"
         >
           {mobileOpen ? "✕" : "☰"}
         </button>
       </div>
 
-      {/* মোবাইল মেনু */}
+      {/* Mobile Navigation */}
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 py-4 md:hidden">
+
           <nav className="flex flex-col gap-3">
             {links.map((link) => (
               <Link
@@ -168,10 +216,29 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex flex-col gap-3">
-              <p className="text-sm font-semibold">{user.name}</p>
+
+              <div className="flex items-center gap-3">
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt={user.name || "Profile"}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-secondary font-semibold">
+                    {user.name?.charAt(0).toUpperCase() || "U"}
+                  </div>
+                )}
+
+                <p className="text-sm font-semibold">{user.name}</p>
+              </div>
+
               <button
+                type="button"
                 onClick={handleLogout}
-                className="rounded-md border border-border px-4 py-2 text-left text-sm text-destructive"
+                className="rounded-md border border-border px-4 py-2 text-left text-sm text-destructive hover:bg-muted"
               >
                 Logout
               </button>
@@ -185,6 +252,7 @@ export default function Navbar() {
               >
                 Sign In
               </Link>
+
               <Link
                 href="/signup"
                 onClick={() => setMobileOpen(false)}
