@@ -6,7 +6,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { authFetch } from "@/lib/api";
 
-
 type Appointment = {
     _id: string;
     serviceName: string;
@@ -20,7 +19,6 @@ type Appointment = {
     paymentStatus: string;
     createdAt: string;
 };
-
 
 // status অনুযায়ী badge-এর রং
 function statusColor(status: string) {
@@ -36,6 +34,7 @@ export default function MyAppointmentsPage() {
     const [cancelItem, setCancelItem] = useState<Appointment | null>(null);
     const [cancelling, setCancelling] = useState(false);
     const [payingId, setPayingId] = useState("");
+    const [checkoutUrl, setCheckoutUrl] = useState("");
 
     // নিজের সব অ্যাপয়েন্টমেন্ট আনা
     useEffect(() => {
@@ -44,7 +43,11 @@ export default function MyAppointmentsPage() {
                 const data = await authFetch("/api/appointments");
                 setAppointments(data);
             } catch (error) {
-                toast.error(error instanceof Error ? error.message : "Failed to load appointments");
+                toast.error(
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to load appointments"
+                );
             } finally {
                 setLoading(false);
             }
@@ -52,6 +55,13 @@ export default function MyAppointmentsPage() {
 
         loadAppointments();
     }, []);
+
+    // Stripe Checkout page-এ redirect করা
+    useEffect(() => {
+        if (checkoutUrl) {
+            window.location.assign(checkoutUrl);
+        }
+    }, [checkoutUrl]);
 
     // Appointment Cancel করা
     async function handleCancel() {
@@ -76,7 +86,11 @@ export default function MyAppointmentsPage() {
 
             setCancelItem(null);
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to cancel");
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to cancel"
+            );
         } finally {
             setCancelling(false);
         }
@@ -92,9 +106,18 @@ export default function MyAppointmentsPage() {
                 body: JSON.stringify({ appointmentId: id }),
             });
 
-            window.location.href = data.url;
+            if (!data.url) {
+                throw new Error("Stripe checkout URL not found");
+            }
+
+            setCheckoutUrl(data.url);
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to start payment");
+            toast.error(
+                error instanceof Error
+                    ? error.message
+                    : "Failed to start payment"
+            );
+
             setPayingId("");
         }
     }
@@ -105,12 +128,17 @@ export default function MyAppointmentsPage() {
 
     return (
         <div>
-            <h1 className="text-2xl font-bold text-foreground">My Appointments</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+                My Appointments
+            </h1>
 
             {/* কিছু না থাকলে বার্তা */}
             {appointments.length === 0 && (
                 <div className="mt-6 rounded-xl border border-border bg-card p-8 text-center">
-                    <p className="text-foreground/70">You have no appointments yet.</p>
+                    <p className="text-foreground/70">
+                        You have no appointments yet.
+                    </p>
+
                     <Link
                         href="/services"
                         className="mt-4 inline-block font-medium text-[#8A6A2F] hover:underline"
@@ -124,7 +152,6 @@ export default function MyAppointmentsPage() {
             {appointments.length > 0 && (
                 <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-card">
                     <table className="w-full text-left text-sm">
-
                         <thead className="border-b border-border bg-muted">
                             <tr>
                                 <th className="p-3">Service</th>
@@ -139,10 +166,12 @@ export default function MyAppointmentsPage() {
                             </tr>
                         </thead>
 
-
                         <tbody>
                             {appointments.map((item) => (
-                                <tr key={item._id} className="border-b border-border last:border-0">
+                                <tr
+                                    key={item._id}
+                                    className="border-b border-border last:border-0"
+                                >
                                     <td className="p-3">
                                         <div className="flex items-center gap-3">
                                             <img
@@ -150,7 +179,10 @@ export default function MyAppointmentsPage() {
                                                 alt={item.serviceName}
                                                 className="h-10 w-10 rounded-md bg-muted object-cover"
                                             />
-                                            <span className="font-medium">{item.serviceName}</span>
+
+                                            <span className="font-medium">
+                                                {item.serviceName}
+                                            </span>
                                         </div>
                                     </td>
 
@@ -170,17 +202,22 @@ export default function MyAppointmentsPage() {
                                         ${item.servicePrice}
                                     </td>
 
-
                                     <td className="p-3">
-                                        <span className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${statusColor(item.status)}`}>
+                                        <span
+                                            className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${statusColor(item.status)}`}
+                                        >
                                             {item.status}
                                         </span>
                                     </td>
 
-                                    <td className="p-3 capitalize">{item.paymentStatus}</td>
+                                    <td className="p-3 capitalize">
+                                        {item.paymentStatus}
+                                    </td>
 
                                     <td className="p-3">
-                                        {new Date(item.createdAt).toLocaleDateString()}
+                                        {new Date(
+                                            item.createdAt
+                                        ).toLocaleDateString()}
                                     </td>
 
                                     {/* Actions */}
@@ -218,9 +255,9 @@ export default function MyAppointmentsPage() {
                                                             ? "Redirecting..."
                                                             : "Pay Now"}
                                                     </button>
-
                                                 )}
-                                            {/* paid হলে Pay Now-এর জায়গায় Paid লেখা */}
+
+                                            {/* Paid হলে Pay Now-এর জায়গায় Paid লেখা */}
                                             {item.paymentStatus === "paid" && (
                                                 <span className="px-3 py-1 text-sm font-medium text-green-700">
                                                     Paid ✓
@@ -247,9 +284,15 @@ export default function MyAppointmentsPage() {
                             <p>Date: {details.date}</p>
                             <p>Time: {details.time}</p>
                             <p>Price: ${details.servicePrice}</p>
-                            <p className="capitalize">Status: {details.status}</p>
-                            <p className="capitalize">Payment: {details.paymentStatus}</p>
-                            <p>Message: {details.message || "No message"}</p>
+                            <p className="capitalize">
+                                Status: {details.status}
+                            </p>
+                            <p className="capitalize">
+                                Payment: {details.paymentStatus}
+                            </p>
+                            <p>
+                                Message: {details.message || "No message"}
+                            </p>
                         </div>
 
                         <button
@@ -272,7 +315,8 @@ export default function MyAppointmentsPage() {
                         </h2>
 
                         <p className="mt-2 text-sm text-foreground/70">
-                            Are you sure you want to cancel your {cancelItem.serviceName} appointment?
+                            Are you sure you want to cancel your{" "}
+                            {cancelItem.serviceName} appointment?
                         </p>
 
                         <div className="mt-6 flex gap-3">
@@ -290,7 +334,9 @@ export default function MyAppointmentsPage() {
                                 disabled={cancelling}
                                 className="w-full rounded-md bg-red-600 py-2 text-white hover:opacity-90 disabled:opacity-60"
                             >
-                                {cancelling ? "Cancelling..." : "Yes, Cancel"}
+                                {cancelling
+                                    ? "Cancelling..."
+                                    : "Yes, Cancel"}
                             </button>
                         </div>
                     </div>
