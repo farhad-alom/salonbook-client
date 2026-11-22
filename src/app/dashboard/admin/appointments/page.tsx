@@ -4,6 +4,18 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authFetch } from "@/lib/api";
 
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 type Appointment = {
     _id: string;
     customerName: string;
@@ -128,17 +140,42 @@ export default function ManageAppointmentsPage() {
                                             )}
                                             {/* Cancel pending বা confirmed হলে */}
                                             {item.status !== "cancelled" && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        if (window.confirm("Cancel this appointment?")) {
-                                                            updateStatus(item._id, "cancel");
-                                                        }
-                                                    }}
-                                                    className="rounded-md bg-red-600 px-3 py-1 text-white hover:opacity-90"
-                                                >
-                                                    Cancel
-                                                </button>
+                                                <AlertDialog>
+                                                    <AlertDialogTrigger >
+                                                        <button
+                                                            type="button"
+                                                            className="rounded-md bg-red-600 px-3 py-1 text-white hover:opacity-90"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </AlertDialogTrigger>
+
+                                                    <AlertDialogContent>
+                                                        <AlertDialogHeader>
+                                                            <AlertDialogTitle>
+                                                                Cancel Appointment?
+                                                            </AlertDialogTitle>
+
+                                                            <AlertDialogDescription>
+                                                                Are you sure you want to cancel this appointment?
+                                                                This action will change the appointment status to cancelled.
+                                                            </AlertDialogDescription>
+                                                        </AlertDialogHeader>
+
+                                                        <AlertDialogFooter>
+                                                            <AlertDialogCancel>
+                                                                No, Keep It
+                                                            </AlertDialogCancel>
+
+                                                            <AlertDialogAction
+                                                                onClick={() => updateStatus(item._id, "cancel")}
+                                                                className="bg-red-600 text-white hover:bg-red-700"
+                                                            >
+                                                                Yes, Cancel Appointment
+                                                            </AlertDialogAction>
+                                                        </AlertDialogFooter>
+                                                    </AlertDialogContent>
+                                                </AlertDialog>
                                             )}
                                         </div>
                                     </td>

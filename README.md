@@ -6,9 +6,9 @@ This repository is the **client (frontend)**. The server is in a separate reposi
 
 ## Links
 
-- Live Site: `ADD_LIVE_LINK_HERE`
-- Client Repository: `ADD_CLIENT_REPO_LINK_HERE`
-- Server Repository: `ADD_SERVER_REPO_LINK_HERE`
+- Live Site: `https://salonbook-client-puce.vercel.app`
+- Client Repository: `https://github.com/farhad-alom/salonbook-client`
+- Server Repository: `https://github.com/farhad-alom/salonbook-server`
 
 ## Features
 
