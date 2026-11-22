@@ -141,13 +141,11 @@ export default function ManageAppointmentsPage() {
                                             {/* Cancel pending বা confirmed হলে */}
                                             {item.status !== "cancelled" && (
                                                 <AlertDialog>
-                                                    <AlertDialogTrigger >
-                                                        <button
-                                                            type="button"
-                                                            className="rounded-md bg-red-600 px-3 py-1 text-white hover:opacity-90"
-                                                        >
-                                                            Cancel
-                                                        </button>
+                                                    <AlertDialogTrigger
+                                                        type="button"
+                                                        className="rounded-md bg-red-600 px-3 py-1 text-white hover:opacity-90"
+                                                    >
+                                                        Cancel
                                                     </AlertDialogTrigger>
 
                                                     <AlertDialogContent>

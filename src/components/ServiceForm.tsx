@@ -75,7 +75,10 @@ export default function ServiceForm({ service }: { service?: Service }) {
     }
 
     return (
-        <form onSubmit={handleSave} className="max-w-xl space-y-4 rounded-xl border border-border bg-card p-6">
+        <form
+            onSubmit={handleSave}
+            className="mx-auto w-full max-w-xl space-y-4 rounded-xl border border-border bg-card p-6"
+        >
             <input
                 name="serviceName"
                 value={form.serviceName}
