@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { authFetch } from "@/lib/api";
 import { uploadImage } from "@/lib/uploadImage";
 import { type Service } from "@/components/ServiceCard";
+import Image from "next/image";
 
 const categories = [
     "Haircut & Styling",
@@ -149,7 +150,15 @@ export default function ServiceForm({ service }: { service?: Service }) {
                     Image {service && "(leave empty to keep the current image)"}
                 </label>
                 {/* Update-এ বর্তমান ছবি দেখানো */}
-                {service && <img src={service.image} alt={service.serviceName} className="mb-2 h-24 rounded-md object-cover" />}
+                {service && (
+                    <Image
+                        src={service.image}
+                        alt={service.serviceName}
+                        width={200}
+                        height={100}
+                        className="mb-2 h-24 rounded-md object-cover"
+                    />
+                )}
                 <input
                     type="file"
                     accept="image/*"

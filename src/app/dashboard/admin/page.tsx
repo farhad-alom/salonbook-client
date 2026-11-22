@@ -29,10 +29,10 @@ const AdminOverViewPage = () => {
     const cards = [
         { label: "Total Customers", value: stats.customers },
         { label: "Active Service", value: stats.activeServices },
-        { label: "Total Appoinments", value: stats.total },
+        { label: "Total Appointments", value: stats.total },
         { label: "Pending", value: stats.pending },
         { label: "Confirmed", value: stats.confirmed },
-        { label: "Successfull", value: stats.payments },
+        { label: "Successful Payments", value: stats.payments },
     ];
 
     return (
