@@ -28,4 +28,10 @@ export const auth = betterAuth({
             isBlocked: { type: "boolean", defaultValue: false, input: false },
         },
     },
+    account: {
+        accountLinking: {
+            enabled: true,
+            trustedProviders: ["google"],
+        },
+    },
 });

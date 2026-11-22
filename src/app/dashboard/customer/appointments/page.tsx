@@ -6,17 +6,21 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { authFetch } from "@/lib/api";
 
+
 type Appointment = {
     _id: string;
     serviceName: string;
     serviceImage: string;
+    serviceCategory: string;
     servicePrice: number;
     date: string;
     time: string;
     message: string;
     status: string;
     paymentStatus: string;
+    createdAt: string;
 };
+
 
 // status অনুযায়ী badge-এর রং
 function statusColor(status: string) {
@@ -120,16 +124,21 @@ export default function MyAppointmentsPage() {
             {appointments.length > 0 && (
                 <div className="mt-6 overflow-x-auto rounded-xl border border-border bg-card">
                     <table className="w-full text-left text-sm">
+
                         <thead className="border-b border-border bg-muted">
                             <tr>
                                 <th className="p-3">Service</th>
+                                <th className="p-3">Category</th>
                                 <th className="p-3">Date</th>
                                 <th className="p-3">Time</th>
+                                <th className="p-3">Price</th>
                                 <th className="p-3">Status</th>
                                 <th className="p-3">Payment</th>
+                                <th className="p-3">Request Date</th>
                                 <th className="p-3">Actions</th>
                             </tr>
                         </thead>
+
 
                         <tbody>
                             {appointments.map((item) => (
@@ -145,8 +154,22 @@ export default function MyAppointmentsPage() {
                                         </div>
                                     </td>
 
-                                    <td className="p-3">{item.date}</td>
-                                    <td className="p-3">{item.time}</td>
+                                    <td className="p-3">
+                                        {item.serviceCategory}
+                                    </td>
+
+                                    <td className="p-3">
+                                        {item.date}
+                                    </td>
+
+                                    <td className="p-3">
+                                        {item.time}
+                                    </td>
+
+                                    <td className="p-3">
+                                        ${item.servicePrice}
+                                    </td>
+
 
                                     <td className="p-3">
                                         <span className={`rounded-full px-3 py-1 text-xs font-medium capitalize ${statusColor(item.status)}`}>
@@ -155,6 +178,10 @@ export default function MyAppointmentsPage() {
                                     </td>
 
                                     <td className="p-3 capitalize">{item.paymentStatus}</td>
+
+                                    <td className="p-3">
+                                        {new Date(item.createdAt).toLocaleDateString()}
+                                    </td>
 
                                     {/* Actions */}
                                     <td className="p-3">
