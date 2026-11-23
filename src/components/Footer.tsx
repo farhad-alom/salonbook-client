@@ -83,9 +83,10 @@ export default function Footer() {
                 <div>
                     <h3 className="text-white font-semibold text-lg mb-4">Contact Us</h3>
                     <ul className="space-y-2 text-sm text-gray-400">
-                        <li>Phone: +880 1700-000000</li>
-                        <li>Email: support@salonbook.com</li>
-                        <li>Help Desk: Available 24/7</li>
+                        <li>Phone: +880 1735-287645 (WhatsApp)</li>
+                        <li>Email: farhadwebdevs@gmail.com</li>
+                        <li>GitHub: <a href="https://github.com/farhad-alom" target="_blank" className="underline hover:opacity-70 transition-opacity">Click Here</a></li>
+                        <li>LinkedIn: <a href="https://www.linkedin.com/in/farhad-alom" target="_blank" className="underline hover:opacity-70 transition-opacity">Click Here</a></li>
                     </ul>
                 </div>
 
@@ -93,7 +94,7 @@ export default function Footer() {
                 <div>
                     <h3 className="text-white font-semibold text-lg mb-4">Visit Us</h3>
                     <p className="text-sm text-gray-400 mb-3">
-                        House 12, Road 5, Dhanmondi, Dhaka, Bangladesh
+                        Bagmara, Rajshahi, Bangladesh
                     </p>
                     <h4 className="text-white font-medium text-sm mb-1">Opening Hours:</h4>
                     <p className="text-sm text-gray-400">Sat - Thu: 10:00 AM - 9:00 PM</p>
